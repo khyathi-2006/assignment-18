@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Music Player</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(to right, #f8a8a8 50%, #b0f0e6 50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .player {
+      background-color: rgba(255, 255, 255, 0.4);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .cover {
+      width: 180px;
+      height: 180px;
+      border-radius: 20px;
+      object-fit: cover;
+      margin-bottom: 20px;
+    }
+
+    .title-container {
+      overflow: hidden;
+      width: 100%;
+      margin-bottom: 15px;
+      height: 25px;
+    }
+
+    .title {
+      display: inline-block;
+      white-space: nowrap;
+      animation: scrollText 10s linear infinite;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    @keyframes scrollText {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    audio {
+      display: none;
+    }
+
+    
+
+    #progress::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #1b5e52;
+      cursor: pointer;
+      border: none;
+    }
+
+    #progress::-moz-range-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #1b5e52;
+      cursor: pointer;
+      border: none;
+    }
+
+    #progress::-moz-range-track {
+      background: #247c6c;
+      height: 8px;
+      border-radius: 4px;
+    }
+
+    #timeDisplay {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .controls button {
+      background-color: #247c6c;
+      border: none;
+      color: white;
+      font-size: 18px;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
+
+    .controls button:hover {
+      background-color: #1b5e52;
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <img src="" alt="Album Cover" class="cover" id="cover">
+    <div class="title-container">
+      <div class="title" id="title">Song Title</div>
+    </div>
+    <audio id="audio"></audio>
+
+    <input type="range" id="progress" value="0" min="0" step="1" />
+    <div id="timeDisplay">0:00 / 0:00</div>
+
+    <div class="controls">
+      <button onclick="prevSong()">⏮</button>
+      <button onclick="togglePlay()" id="playPauseBtn">▶</button>
+      <button onclick="nextSong()">⏭</button>
+      <button onclick="toggleLoop()" id="loopBtn">⟳</button>
+    </div>
+  </div>
+
+  <script>
+    const songs = [
+      {
+        title: "Kesariya",
+        cover: "https://c.saavncdn.com/191/Kesariya-From-Brahmastra-Hindi-2022-20220717092820-500x500.jpg",
+        audio: "https://raw.githubusercontent.com/khyathi-2006/music-files/refs/heads/main/SpotiDownloader.com%20-%20Kesariya%20(From%20_Brahmastra_)%20-%20Pritam.mp3"
+      },
+      {
+        title: "Tum hi ho",
+        cover: "https://i.scdn.co/image/ab67616d0000b2736404721c1943d5069f0805f3",
+        audio: "https://raw.githubusercontent.com/khyathi-2006/music-files/refs/heads/main/SpotiDownloader.com%20-%20Tum%20Hi%20Ho%20-%20Mithoon.mp3"
+      },
+      {
+        title: "Premalo(From court)",
+        cover: "https://c.saavncdn.com/854/Premalo-From-Court-Telugu-2025-20250213103211-500x500.jpg",
+        audio: "https://raw.githubusercontent.com/khyathi-2006/music-files/refs/heads/main/SpotiDownloader.com%20-%20Premalo%20(From%20_Court_)%20-%20Vijai%20Bulganin.mp3"
+      },
+      {
+        title: "Nuvvunte na jathaga",
+        cover: "https://i.scdn.co/image/ab67616d0000b273006e0d5d5a2335fc53b29101",
+        audio: "https://raw.githubusercontent.com/khyathi-2006/music-files/refs/heads/main/SpotiDownloader.com%20-%20Nuvvunte%20Naa%20Jathagaa%20-%20A.R.%20Rahman.mp3"
+      },
+      {
+        title: "Soni Soni",
+        cover: "https://c.saavncdn.com/306/Soni-Soni-From-Ishq-Vishk-Rebound-Hindi-2024-20240619164934-500x500.jpg",
+        audio: "https://raw.githubusercontent.com/khyathi-2006/music-files/refs/heads/main/SpotiDownloader.com%20-%20Soni%20Soni%20(From%20_Ishq%20Vishk%20Rebound_)%20-%20Darshan%20Raval.mp3"
+      }
+    ];
+
+    let currentSong = 0;
+    let isLooping = false;
+
+    const title = document.getElementById("title");
+    const cover = document.getElementById("cover");
+    const audio = document.getElementById("audio");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const loopBtn = document.getElementById("loopBtn");
+    const progress = document.getElementById("progress");
+    const timeDisplay = document.getElementById("timeDisplay");
+
+    function loadSong(index) {
+      const song = songs[index];
+      title.textContent = song.title;
+      cover.src = song.cover;
+      audio.src = song.audio;
+      audio.loop = isLooping;
+    }
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    function updatePlayPauseIcon() {
+      playPauseBtn.textContent = audio.paused ? "▶" : "❚❚";
+    }
+
+    function nextSong() {
+      currentSong = (currentSong + 1) % songs.length;
+      loadSong(currentSong);
+      updatePlayPauseIcon(); // keep consistent icon
+    }
+
+    function prevSong() {
+      currentSong = (currentSong - 1 + songs.length) % songs.length;
+      loadSong(currentSong);
+      updatePlayPauseIcon();
+    }
+
+    function toggleLoop() {
+      isLooping = !isLooping;
+      audio.loop = isLooping;
+      loopBtn.style.backgroundColor = isLooping ? "#1b5e52" : "#247c6c";
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateTimeDisplay() {
+      timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration || 0)}`;
+      progress.value = Math.floor(audio.currentTime);
+    }
+
+    progress.addEventListener("input", () => {
+      audio.currentTime = progress.value;
+    });
+
+    audio.addEventListener("timeupdate", updateTimeDisplay);
+    audio.addEventListener("play", updatePlayPauseIcon);
+    audio.addEventListener("pause", updatePlayPauseIcon);
+    audio.addEventListener("ended", () => {
+      if (!audio.loop) nextSong();
+    });
+
+    window.onload = () => {
+      loadSong(currentSong); // load song only, do not play
+    };
+  </script>
+</body>
+</html>
+
