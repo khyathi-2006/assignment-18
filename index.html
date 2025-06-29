@@ -10,9 +10,10 @@
       font-family: sans-serif;
       background: linear-gradient(to right, #f8a8a8 50%, #b0f0e6 50%);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
     }
 
     .player {
@@ -59,18 +60,7 @@
       display: none;
     }
 
-    
-
-    #progress::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 18px;
-      width: 18px;
-      border-radius: 50%;
-      background: #1b5e52;
-      cursor: pointer;
-      border: none;
-    }
-
+    #progress::-webkit-slider-thumb,
     #progress::-moz-range-thumb {
       height: 18px;
       width: 18px;
@@ -113,6 +103,30 @@
     .controls button:hover {
       background-color: #1b5e52;
     }
+
+    h1 {
+      margin-top: 40px;
+      color: #333;
+    }
+
+    .task-container {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .task {
+      background-color: #247c6c;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .task:hover {
+      background-color: #1b5e52;
+    }
   </style>
 </head>
 <body>
@@ -122,16 +136,19 @@
       <div class="title" id="title">Song Title</div>
     </div>
     <audio id="audio"></audio>
-
     <input type="range" id="progress" value="0" min="0" step="1" />
     <div id="timeDisplay">0:00 / 0:00</div>
-
     <div class="controls">
       <button onclick="prevSong()">⏮</button>
       <button onclick="togglePlay()" id="playPauseBtn">▶</button>
       <button onclick="nextSong()">⏭</button>
       <button onclick="toggleLoop()" id="loopBtn">⟳</button>
     </div>
+  </div>
+
+  <h1>Select a Task</h1>
+  <div class="task-container">
+    <a href="Task1.html" class="task">Task1 : Calculate Home Loan EMI</a>
   </div>
 
   <script>
@@ -197,7 +214,7 @@
     function nextSong() {
       currentSong = (currentSong + 1) % songs.length;
       loadSong(currentSong);
-      updatePlayPauseIcon(); // keep consistent icon
+      updatePlayPauseIcon();
     }
 
     function prevSong() {
@@ -235,15 +252,8 @@
     });
 
     window.onload = () => {
-      loadSong(currentSong); // load song only, do not play
+      loadSong(currentSong);
     };
   </script>
 </body>
-</html>
-<h1>Select a Task</h1>
-<div class="task-container">
-    <a href="Task1.html" class="task">Task1 : Calculate Home Loan EMI</a>
-</div>
-</body>
-
 </html>
